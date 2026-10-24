@@ -20,7 +20,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 // Needs PostgreSQL on localhost:5432 (db css, user css, password css).
 // No @Transactional here: the count must see what was really committed.
-@SpringBootTest
+@SpringBootTest(classes = com.css.purchase.config.Application.class)
 class RequestPersistenceTest {
 
   @Autowired RequestService service;

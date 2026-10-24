@@ -17,8 +17,8 @@ class ApplicationTest {
   @Test
   void springInjectsRuleIntoService() {
     assertEquals(RequestStatus.APPROVED,
-        service.move(RequestStatus.DRAFT, RequestStatus.APPROVED));
+        service.move("PR-1", RequestStatus.DRAFT, RequestStatus.APPROVED));
     assertThrows(IllegalStateException.class,
-        () -> service.move(RequestStatus.DRAFT, RequestStatus.ORDERED));
+        () -> service.move("PR-1", RequestStatus.DRAFT, RequestStatus.ORDERED));
   }
 }

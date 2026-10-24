@@ -16,8 +16,8 @@ public class Application {
   @Bean
   CommandLineRunner demo(RequestService service) {
     return args -> {
-      RequestStatus now = service.move(RequestStatus.DRAFT, RequestStatus.APPROVED);
-      System.out.println("DRAFT -> " + now);
+      RequestStatus now = service.move("PR-1", RequestStatus.DRAFT, RequestStatus.APPROVED);
+      System.out.println("PR-1: DRAFT -> " + now);
     };
   }
 }

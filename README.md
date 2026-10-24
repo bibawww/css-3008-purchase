@@ -68,3 +68,42 @@ Arrows point inward. Domain never imports `org.springframework`.
 mvn -q verify
 mvn spring-boot:run
 ```
+
+## Tests, SQL, JDBC (Lab 3)
+
+PostgreSQL, `JdbcTemplate`, no JPA / Flyway / REST.
+
+- `src/main/resources/db/schema.sql` — one table `purchase_request`: `id uuid` (surrogate key, from `RequestId`), `business_key` (`PR-19`, `UNIQUE NOT NULL`), `status` with `CHECK (status IN ('DRAFT','APPROVED','ORDERED'))`, `title`, `created_at`.
+- `persistence/RequestJdbc` — `INSERT` and `count` with `?` placeholders (plus `findStatus`; unknown text throws).
+- `config/RequestService` — `@Transactional`. `register` = one transaction per call. `insertTwice` = one transaction, two INSERTs.
+- `domain/DuplicateRequest` — unchecked, so the transaction rolls back.
+- `domain/ApprovalNotifier` — outbound port, mocked in `RequestServiceMockTest`.
+
+| Test | Expected count |
+| --- | --- |
+| `secondStatementRollsBack` (`insertTwice("PR-19")`) | 0 |
+| `secondRequestKeepsTheFirst` (`register` twice) | 1 |
+
+The tests have no `@Transactional`, so they see committed data. Every test starts with `DROP TABLE` + `schema.sql` on an empty database.
+
+### Database for local run
+
+```
+docker compose up -d      # only PostgreSQL: db css, user css, password css, port 5432
+mvn -q verify
+```
+
+Or a local PostgreSQL install with the same db/user/password (classroom values, not secrets).
+
+### Prove rollback in psql first
+
+```sql
+BEGIN;
+INSERT INTO purchase_request (id, business_key, status, title)
+VALUES ('11111111-1111-1111-1111-111111111111', 'PR-19', 'DRAFT', 'Laptops');
+INSERT INTO purchase_request (id, business_key, status, title)
+VALUES ('22222222-2222-2222-2222-222222222222', 'PR-19', 'DRAFT', 'Laptops again');
+-- ERROR: duplicate key value violates unique constraint
+ROLLBACK;
+SELECT count(*) FROM purchase_request WHERE business_key = 'PR-19';  -- 0
+```

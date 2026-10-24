@@ -32,3 +32,39 @@ Forbidden moves throw `IllegalStateException`.
 java -version     # must print 21
 mvn -q test
 ```
+
+## Spring Boot (Lab 2)
+
+`Application` starts the process. `RequestService` (`@Service`) gets a `Rule` injected. The rule chain is wired in `config/RuleConfig`.
+
+Two `Rule` implementations in `domain`:
+
+- `TransitionRule` — the status table above.
+- `UnapprovedCannotOrder` — stop-factor: only an `APPROVED` request can be `ORDERED`.
+
+`RequestPolicy` and both rules are plain Java: no `org.springframework` import.
+
+### Package diagram
+
+```
+  dto          client        handler         config
+  (JSON later) (HTTP later)  (HTTP week 9)   Application
+                                             RuleConfig
+                                             RequestService (@Service)
+       \            \            /                |
+        \            \          /           injects Rule
+         \            \        /
+                     domain
+              RequestId  RequestStatus  RequestPolicy
+              Rule  + TransitionRule + UnapprovedCannotOrder
+                     (no Spring)
+```
+
+Arrows point inward. Domain never imports `org.springframework`.
+
+### Run
+
+```
+mvn -q verify
+mvn spring-boot:run
+```

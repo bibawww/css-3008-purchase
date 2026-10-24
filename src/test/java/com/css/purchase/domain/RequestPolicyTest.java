@@ -8,7 +8,8 @@ import org.junit.jupiter.params.provider.CsvSource;
 
 class RequestPolicyTest {
 
-  private final RequestPolicy policy = new RequestPolicy();
+  private final RequestPolicy policy =
+      new RequestPolicy(new UnapprovedCannotOrder(new TransitionRule()));
 
   // The same four rows as in README "Status table".
   @ParameterizedTest(name = "{0} -> {1} = {2}")

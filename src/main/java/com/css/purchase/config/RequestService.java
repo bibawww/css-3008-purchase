@@ -2,7 +2,9 @@ package com.css.purchase.config;
 
 import com.css.purchase.domain.ApprovalNotifier;
 import com.css.purchase.domain.DuplicateRequest;
+import com.css.purchase.domain.PurchaseRequest;
 import com.css.purchase.domain.RequestId;
+import com.css.purchase.domain.RequestNotFound;
 import com.css.purchase.domain.RequestStatus;
 import com.css.purchase.domain.Rule;
 import com.css.purchase.persistence.RequestJdbc;
@@ -44,6 +46,21 @@ public class RequestService {
     } catch (DuplicateKeyException ex) { // SQLState 23505
       throw new DuplicateRequest(businessKey); // unchecked -> rollback
     }
+  }
+
+  /** Lab 4: registers one row under a fresh UUID and returns it. */
+  @Transactional
+  public PurchaseRequest create(String businessKey, String title) {
+    RequestId id = RequestId.newId();
+    register(id, businessKey, title);
+    return new PurchaseRequest(
+        UUID.fromString(id.value()), businessKey, RequestStatus.fromText(INSERT_STATUS), title);
+  }
+
+  /** Lab 4: reads one row by UUID. Does not change anything. */
+  @Transactional(readOnly = true)
+  public PurchaseRequest getById(UUID id) {
+    return requests.findById(id).orElseThrow(() -> new RequestNotFound(id));
   }
 
   /** ONE transaction, two INSERTs. The second fails, so the first is rolled back too. */

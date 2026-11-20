@@ -1,5 +1,6 @@
 package com.css.purchase.persistence;
 
+import com.css.purchase.domain.PurchaseRequest;
 import com.css.purchase.domain.RequestStatus;
 import java.util.List;
 import java.util.Optional;
@@ -38,5 +39,21 @@ public class RequestJdbc {
         String.class,
         businessKey);
     return rows.stream().findFirst().map(RequestStatus::fromText);
+  }
+
+  /** Lab 4: read one row by its UUID. Empty when there is no such row. */
+  public Optional<PurchaseRequest> findById(UUID id) {
+    List<PurchaseRequest> rows = jdbc.query("""
+        SELECT id, business_key, status, title
+        FROM purchase_request
+        WHERE id = ?
+        """,
+        (rs, i) -> new PurchaseRequest(
+            rs.getObject("id", UUID.class),
+            rs.getString("business_key"),
+            RequestStatus.fromText(rs.getString("status")),
+            rs.getString("title")),
+        id);
+    return rows.stream().findFirst();
   }
 }
